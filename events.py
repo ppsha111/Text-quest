@@ -1,5 +1,5 @@
 import random
-list = ["well","well","witchut"]
+list = ["well","OldLady",2]
 def interlayer(char, destination, time = 0):
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     if time != 0:
@@ -8,6 +8,9 @@ def interlayer(char, destination, time = 0):
     if "poisoned" in char.traits:
         char.health = char.health - time* 2
         print("из за отравления, вы чувствуюте себя хуже")
+    if "plauge" in char.traits:
+        char.health = char.health - time* 3
+        print("из за болезни, вы чувствуюте себя хуже")
     char.hunger = char.hunger-time*2
     char.shiza = char.shiza+ time*2
     if char.shiza >= 100:
@@ -19,7 +22,7 @@ def interlayer(char, destination, time = 0):
     elif char.health <= 0:
         print("вы умерли от потери здоровья")
         dead()
-    print("сытость:",char.hunger,", шиза:",char.shiza,", здоровье:", char.health)
+    print("сытость:",char.hunger,", шиза: ",char.shiza,", здоровье: ", char.health,"деньги: ",char.money)
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     match destination:
         case "road":
@@ -28,6 +31,8 @@ def interlayer(char, destination, time = 0):
             well(char)
         case "witchut":
             witchut(char)
+        case "OldLady":
+            OldLady(char)
         case "basement":
             basement(char)
 
@@ -44,7 +49,7 @@ def road(char):
     print("1-поспать 8 часов, 2-идти дальше ")
     d = int(input())
     if d == 1:
-        char.shiza = char.shiza-20
+        char.shiza = char.shiza-30
         print("вы поспали и востановили рассудок, но вы сильнее хотите есть")
         interlayer(char,"road",random.randint(7,8))       
     interlayer(char,random.choice(list),random.randint(1,5))
@@ -118,7 +123,7 @@ def basement(char):
     match d:
         case 1:
             if random.randint(1,3) > 2:
-                print("у вас получилось выломать дверь")
+                print("у вас получилось выломать дверь, вы очутились рядом с хижиной ведьмы")
                 interlayer(char,"witchut",0)    
             else:
                 char.health = char.health - 10
@@ -143,7 +148,75 @@ def basement(char):
 
 
 
-# def OldLady(char):
-#     i = random.choice("witch","plauge","doctor","doctor","doctor")
-#     if i == "witch" and "stole from the witch" in char.traits:
+def OldLady(char):
+    i = random.choice(["witch","plauge","doctor","doctor","doctor"])
+    if i == "witch" and "stole from the witch" in char.traits:
+        print("она на тебя набрасывается со словами: ты украл мои зелья")
+        interlayer(char,"basement",random.randint(6,9))
+        char.traits.remove("stole from witch")
+    if i == "witch":
+        print("привет, хочешь я тебя зельем угощу")
+        print("1- да, 2- нет")
+        d1 = int(input())
+        if d1 == 1:     
+            i = random.randint(1,3)
+            match i:
+                case 1:
+                    print("вы выпили зелье похожее на яд")
+                    char.traits.add("poisoned")
+                case 2:
+                    print("вы выпили зелье похожее на зелье лечения")
+                    char.health = char.health+20    
+                case 3:
+                    print("вы выпили зелье похожее на противоядие")   
+                    if "poisoned" in char.traits:
+                        char.traits.remove("poisoned")
+        print("вы развернулись, но старуха испарилась")
+        interlayer(char,"road",0)
+    if i == "plauge":
+        print("вы втретили прокажённую")
+        print("1 - пройти мимо, 2 - обокрасть")
+        d1 = int(input())
+        if d1 == 1:
+            if random.randint(1,10)<2:
+                char.traits.add("plauge")
+                print("вам стало хуже")
+            print("вы возвращаетесь на дорогу")
+        if d1 == 2:
+            if random.randint(1,3)<2:
+                char.traits.add("plauge")
+                print("вам стало хуже")
+            char.money = char.money+random.randint(20,100)
+            print("вы украли немного денег и вернулись на дорогу")
+        interlayer(char,"road",0)
+    if i == "doctor":
+        print("вы видете человека в маске")
+        print("он говорит: привет, я чумной доктор, если хочешь вылечиться, заплати мне 100 монет")
+        print("1 - попросить лечния, 2 - ограбить, 3- пройти мимо ")
+        d1 = int(input())
+        match d1:
+            case 1:
+                if char.money>99:
+                    char.health = char.health+ 50
+                    if "plauge" in char.traits:
+                        char.traits.remove("plauge")
+                    if "poisoned" in char.traits:
+                        char.traits.remove("poisoned")
+                    char.money = char.money-100
+                    print("вам стало гораздо лучше, поэтому вы возвращаетсь на дорогу")
+                if char.money <100:
+                    print("вы не можете себе это позволить, поэтому возвращаетсь на дорогу")
+                interlayer(char,"road",0)
+            case 2:
+                if random.randint(1,100)>30:
+                    char.money = char.money+random.randint(30,150)
+                    print("вы украли немног денег и быстро вернулись на дорогу")
+                    interlayer(char,"road",0)
+                print("вас поймали и избили, но вы смогли сбежать")
+                char.traits.add("wanted")
+                char.health = char.health - random.randint(10,60)
+                interlayer(char,"road",0)
+            case 3:
+                print("вы вернулись на дорогу")
+                interlayer(char,"road",0)                
 
